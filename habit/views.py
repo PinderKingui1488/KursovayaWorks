@@ -12,7 +12,11 @@ from users.permissions import Owner
 class HabitViewSet(viewsets.ModelViewSet):
     serializer_class = HabitSerializer
     pagination_class = CustomPagination
-    queryset = Habit.objects.all()
+
+    def get_queryset(self):
+        if self.action == 'public_habits':
+            return Habit.objects.filter(is_habit_public=True)
+        return Habit.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
         habit = serializer.save()
@@ -22,7 +26,7 @@ class HabitViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def public_habits(self, request):
-        public_habits = self.queryset.filter(is_habit_public=True)
+        public_habits = self.get_queryset()
         serializer = self.get_serializer(public_habits, many=True)
         return Response(serializer.data)
 

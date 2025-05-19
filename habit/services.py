@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta
 
 import requests
-from django_celery_beat.models import IntervalSchedule, PeriodicTask
+from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 from config.settings import BOT_TOKEN
 
@@ -24,12 +24,12 @@ def habit_reminder(habit):
     )
     PeriodicTask.objects.create(
         interval=schedule,
-        name="Habit reminder",
+        name=f"Habit reminder: {habit.activity}",
         task="habits.tasks.habit_remind",
         kwargs=json.dumps(
             {
                 "be_careful": True,
             }
         ),
-        expires=datetime.now() + timedelta(seconds=habit.time_to_complete),
+        expires=datetime.now() + timedelta(seconds=habit.duration_to_complete),
     )
